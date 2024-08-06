@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\RoleDataTable;
+use App\Http\Requests\RoleRequest;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -16,13 +19,11 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(RoleDataTable $dataTable)
     {
+        
         $this->authorize('read role');
-        // if (!Gate::allows('read role')) {
-        //     // abort(403, 'unauthorized');
-        // }
-        return view('role.index');
+        return $dataTable->render('konfigurasi.role');
     }
 
     /**
@@ -63,9 +64,9 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Role $role)
     {
-        //
+        return view('konfigurasi.role-action', compact('role'));
     }
 
     /**
@@ -75,9 +76,16 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(RoleRequest $request, Role $role)
     {
-        //
+        $role->name = $request->name;
+        $role->guard_name = $request->guard_name;
+        $role->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Update data successfully'
+        ]);
     }
 
     /**
@@ -86,8 +94,12 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Role $role)
     {
-        //
+        $role->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Delete data successfully'
+        ]);
     }
 }
