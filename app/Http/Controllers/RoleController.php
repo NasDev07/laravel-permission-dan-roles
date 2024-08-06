@@ -33,7 +33,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return 'create role page';
+        return view('konfigurasi.role-action', ['role' => new Role()]);
     }
 
     /**
@@ -42,9 +42,13 @@ class RoleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(RoleRequest $request)
     {
-        //
+        Role::create($request->all());
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Create data successfully'
+        ]);
     }
 
     /**

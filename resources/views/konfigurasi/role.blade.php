@@ -48,15 +48,62 @@
         const modal = new bootstrap.Modal($('#modalAction'));
 
         $('.btn-add').on('click', function() {
-            console.log('masuk');            
+            $.ajax({
+                method: 'GET',
+                url: `{{ url('konfigurasi/roles/create') }}`,
+                success: function(res) {
+                    $('#modalAction').find('.modal-dialog').html(res);
+                    modal.show();
+                    store();
+                }
+            });
         });
+
+        function store() {
+            $('#formAction').on('submit', function(e) {
+                e.preventDefault();
+                const _form = this;
+                const formData = new FormData(_form);
+
+                const url = this.getAttribute('action');
+
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        window.LaravelDataTables["role-table"].ajax.reload();
+                        modal.hide();
+                    },
+                    error: function(res) {
+                        let errors = res.responseJSON?.errors;
+                        $(_form).find('.text-danger.text-small').remove();
+                        if (errors) {
+                            for (const [key, value] of Object.entries(errors)) {
+                                $(`[name='${key}']`).parent().append(
+                                    `<span class="text-danger text-small">${value}</span>`
+                                )
+                            }
+                        }
+                        console.log(errors);
+
+                    }
+                });
+
+            });
+        }
 
         $('#role-table').on('click', '.action', function() {
             let data = $(this).data();
             let id = data.id;
             let jenis = data.jenis;
 
-            if (jenis == 'delete') {                
+            if (jenis == 'delete') {
                 Swal.fire({
                     title: 'Are you sure?',
                     text: "Apakah Anda yakin ingin menghapus data ini?",
@@ -71,10 +118,10 @@
                             method: 'DELETE',
                             url: `{{ url('konfigurasi/roles/') }}/${id}`,
                             headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                            success: function(res) { 
-                                window.LaravelDataTables["role-table"].ajax.reload();                               
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(res) {
+                                window.LaravelDataTables["role-table"].ajax.reload();
                                 Swal.fire(
                                     'Deleted!',
                                     res.message,
@@ -87,6 +134,7 @@
                 return
             }
 
+
             $.ajax({
                 method: 'GET',
                 url: `{{ url('konfigurasi/roles/') }}/${id}/edit`,
@@ -96,36 +144,6 @@
                     store();
                 }
             });
-
-            function store() {
-                $('#formAction').on('submit', function(e) {
-                    e.preventDefault();
-                    const _form = this;
-                    const formData = new FormData(_form);
-
-                    $.ajax({
-                        method: 'POST',
-                        url: `{{ url('konfigurasi/roles/') }}/${id}`,
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(res) {
-                            window.LaravelDataTables["role-table"].ajax.reload();
-                            modal.hide();
-                        },
-                        error: function(res) {
-                            let errors = res.responseJSON?.errors;
-                            $(_form).find('.text-danger.text-small').remove();
-                            if (errors) {
-                                for (const [key, value] of Object.entries(errors)) {
-                                    $(`[name='${key}']`).parent().append(
-                                        `<span class="text-danger text-small">${value}</span>`
-                                        )
-                                }
-                            }
-                            console.log(errors);
-
-          
+        });
+    </script>
+@endpush
